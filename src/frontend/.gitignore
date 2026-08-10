@@ -40,3 +40,4 @@ dist
 .history
 .swc
 .codecc
+!AGENTS.md
