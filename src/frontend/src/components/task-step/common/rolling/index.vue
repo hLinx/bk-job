@@ -92,8 +92,10 @@
         :max-file-num-field="maxFileNumField"
         @on-change="handleFieldChange" />
       <!-- 滚动机制 - 并行执行时不显示 -->
+      <!-- key防止与【滚动策略实例】被错误复用 -->
       <jb-form-item
         v-if="!isFileMode|| formData[executionModeField] === 1"
+        :key="modeField"
         ref="rollingMode"
         :label="$t('滚动机制')"
         required>
@@ -275,6 +277,7 @@
       formData: {
         handler(formData) {
           if (!this.isFileMode || formData[this.typeField] === 1) {
+            this.$refs.expr && this.$refs.expr.clearValidator();
             this.validatorExpr(formData[this.exprField]);
           }
           setTimeout(() => {
@@ -449,9 +452,6 @@
        */
       handleFieldChange(field, value) {
         if (field === this.typeField) {
-          value === 1 && this.$emit('on-reset', {
-            [this.exprField]: '10%',
-          });
           // 源文件不支持并行执行，自动重置为串行执行
           value === 2 && this.formData[this.executionModeField] === 2 && this.$emit('on-change', this.executionModeField, 1);
         }
@@ -465,11 +465,6 @@
       handleExecutionModeChange(field, executionMode) {
         this.handleFieldChange(field, executionMode)
         if (executionMode === 2) {
-          // 切换到并行模式时，默认设置延迟值
-          this.$emit('on-reset', {
-            [this.batchStartWaitMinMsField]: 0,
-            [this.batchStartWaitMaxMsField]: 0,
-          });
           this.$nextTick(() => {
             if (this.isFileMode) {
               this.$refs.batchStartWait?.$el?.scrollIntoView();
